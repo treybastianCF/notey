@@ -1,7 +1,6 @@
 package note
 
 import (
-	"fmt"
 	"log/slog"
 )
 
@@ -10,7 +9,8 @@ func (s *Server) initDb() {
 	table := `
 	create table if not exists notes (
 		id integer not null primary key, 
-		conent text not null,
+		title string not null,
+		content text not null,
 		createdAt datetime default current_timestamp
 	);
 	`
@@ -22,16 +22,16 @@ func (s *Server) initDb() {
 	slog.Debug("notes table done")
 }
 
-func (s *Server) getAllNotes() ([]Note, error) {
-	rows, err := s.db.Query("SELECT id, content, createdAt FROM notes ORDER BY createdAt DESC")
+func (s *Server) getAllNotes() ([]NoteAbbr, error) {
+	rows, err := s.db.Query("SELECT id, title, createdAt FROM notes ORDER BY createdAt DESC")
 	if err != nil {
-		return nil, fmt.Errorf("failed to get all notes %v", err)
+		return nil, err
 	}
-	res := []Note{}
+	res := []NoteAbbr{}
 	for rows.Next() {
-		var n Note
-		if err = rows.Scan(&n.Id, &n.Content, &n.CreatedAt); err != nil {
-			return nil, fmt.Errorf("failed to get all notes %v", err)
+		var n NoteAbbr
+		if err = rows.Scan(&n.Id, &n.Title, &n.CreatedAt); err != nil {
+			return nil, err
 		}
 		res = append(res, n)
 	}
@@ -41,13 +41,14 @@ func (s *Server) getAllNotes() ([]Note, error) {
 
 func (s *Server) getNoteById(id int) (Note, error) {
 	var n Note
-	stmt, err := s.db.Prepare("SELECT id, content, createdAt FROM notes WHERE id = ?")
+	stmt, err := s.db.Prepare("SELECT id, title, content, createdAt FROM notes WHERE id = ?")
 	if err != nil {
-		return n, fmt.Errorf("failed to create prepared stmt %v", err)
+		return n, err
 	}
 	defer stmt.Close()
-	if err = stmt.QueryRow(id).Scan(&n.Id, &n.Content, &n.CreatedAt); err != nil {
-		return n, fmt.Errorf("failed to deserialize row into struct %v", err)
+
+	if err = stmt.QueryRow(id).Scan(&n.Id, &n.Title, &n.Content, &n.CreatedAt); err != nil {
+		return n, err
 	}
 	return n, nil
 }
@@ -55,7 +56,7 @@ func (s *Server) getNoteById(id int) (Note, error) {
 func (s *Server) deleteNoteById(id int) error {
 	stmt, err := s.db.Prepare("DELETE FROM notes WHERE id = ?")
 	if err != nil {
-		return fmt.Errorf("failed to delete note %v", err)
+		return err
 	}
 	defer stmt.Close()
 
@@ -64,16 +65,16 @@ func (s *Server) deleteNoteById(id int) error {
 	return nil
 }
 
-func (s *Server) createNote(content string) (Note, error) {
+func (s *Server) createNote(title string, content string) (Note, error) {
 	var n Note
-	stmt, err := s.db.Prepare("INSERT INTO note(content) VALUES(?)")
+	stmt, err := s.db.Prepare("INSERT INTO note(title, content) VALUES(?,?) RETURNING id, title, content, createdAt")
 	if err != nil {
-		return n, fmt.Errorf("failed to create note %v", err)
+		return n, err
 	}
 	defer stmt.Close()
 
-	if err = stmt.QueryRow(content).Scan(&n.Id, &n.Content, &n.CreatedAt); err != nil {
-		return n, fmt.Errorf("failed to create note %v", err)
+	if err = stmt.QueryRow(content).Scan(&n.Id, &n.Title, &n.Content, &n.CreatedAt); err != nil {
+		return n, err
 	}
 
 	return n, nil
