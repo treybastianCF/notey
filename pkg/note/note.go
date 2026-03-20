@@ -12,14 +12,14 @@ type Note struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+func (n *Note) String() string {
+	return fmt.Sprintf("%s\n%s\n\ncreated at: %s\n", n.Title, n.Content, n.CreatedAt)
+}
+
 type NoteAbbr struct {
 	Id        int       `json:"id"`
 	Title     string    `json:"title"`
 	CreatedAt time.Time `json:"createdAt"`
-}
-
-func (n *Note) FullNoteString() string {
-	return fmt.Sprintf("%s\n%s\n\ncreated at: %s\n", n.Title, n.Content, n.CreatedAt)
 }
 
 func (n *NoteAbbr) String() string {
