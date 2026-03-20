@@ -16,6 +16,8 @@ func (s *Server) Setup(db *sql.DB, mux *http.ServeMux) {
 	s.db = db
 	s.mux = mux
 
+	s.initDb()
+
 	// setup http handlers
 	s.mux.HandleFunc("GET /notes", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
