@@ -65,7 +65,7 @@ func (s *Server) Setup(db *sql.DB, mux *http.ServeMux) {
 	s.initDb()
 
 	// setup http handlers TODO: refactor these to seprate functions / file
-	s.mux.HandleFunc("GET /n,otes", middleware.Logger(func(w http.ResponseWriter, r *http.Request) {
+	s.mux.HandleFunc("GET /notes", middleware.Logger(func(w http.ResponseWriter, r *http.Request) {
 		notes, err := s.getAllNotes()
 		if err != nil {
 			writeErrorResponse(err, &ErrorResponse{"failed to get notes", 500}, w)

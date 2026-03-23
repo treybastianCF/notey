@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	client := note.Client{}
+	client := note.Client{Uri: "http://localhost:8080"}
 
 	list := flag.Bool("list", false, "list all of your notes")
 	get := flag.Int("get", -1, "get an individual note (--get 1)")
@@ -56,11 +56,10 @@ func main() {
 		}
 		n, err := client.CreateNote(note.NewNote{Title: *title, Content: *content})
 		if err != nil {
-			fmt.Printf("failed to create note %v", err)
+			fmt.Printf("failed to create note %v\n", err)
 			os.Exit(1)
 		}
 		fmt.Println("Created note!")
 		fmt.Println(n.String())
 	}
-
 }

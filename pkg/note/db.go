@@ -67,13 +67,13 @@ func (s *Server) deleteNoteById(id int) error {
 
 func (s *Server) createNote(title string, content string) (Note, error) {
 	var n Note
-	stmt, err := s.db.Prepare("INSERT INTO note(title, content) VALUES(?,?) RETURNING id, title, content, createdAt")
+	stmt, err := s.db.Prepare("INSERT INTO notes(title, content) VALUES(?,?) RETURNING id, title, content, createdAt")
 	if err != nil {
 		return n, err
 	}
 	defer stmt.Close()
 
-	if err = stmt.QueryRow(content).Scan(&n.Id, &n.Title, &n.Content, &n.CreatedAt); err != nil {
+	if err = stmt.QueryRow(title, content).Scan(&n.Id, &n.Title, &n.Content, &n.CreatedAt); err != nil {
 		return n, err
 	}
 
