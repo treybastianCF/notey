@@ -1,0 +1,10 @@
+version: 2
+sql:
+  - engine: "sqlite"
+    schema: "internal/note/db/migrations"
+    queries: "internal/note/db/query.sql"
+    gen:
+      go:
+        package: "db"
+        out: "internal/note/db"
+        emit_interface: true

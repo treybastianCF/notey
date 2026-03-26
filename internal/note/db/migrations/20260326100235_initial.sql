@@ -1,0 +1,10 @@
+-- +goose Up
+CREATE TABLE notes(
+  id INTEGER NOT NULL PRIMARY KEY, 
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- +goose Down
+DELETE TABLE notes;
