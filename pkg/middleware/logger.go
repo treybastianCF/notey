@@ -28,6 +28,7 @@ func Logger(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(wrapedWriter, r)
 		durration := time.Since(startTime)
 
+		//#nosec [CWE-117] [- r.Method is not reachable with anything but valid request methods]
 		slog.Info("request",
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),

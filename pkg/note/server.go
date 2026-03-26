@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	pb "notey/pkg/gen/note/v1"
 	"notey/pkg/middleware"
 )
 
 type Server struct {
+	pb.UnimplementedNoteServiceServer
 	db  *sql.DB
 	mux *http.ServeMux
 }
@@ -16,11 +18,6 @@ type Server struct {
 type ErrorResponse struct {
 	Msg    string `json:"msg"`
 	Status int    `json:"status"`
-}
-
-type NewNote struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
 }
 
 func writeErrorResponse(err error, er *ErrorResponse, w http.ResponseWriter) {
@@ -62,10 +59,4 @@ func (s *Server) Setup(db *sql.DB, mux *http.ServeMux) {
 	s.initDb()
 
 	s.mux.HandleFunc("GET /notes", middleware.Logger(s.getAllNotesHandler))
-
-	s.mux.HandleFunc("DELETE /notes/{id}", middleware.Logger(s.deleteAllNotesHandler))
-
-	s.mux.HandleFunc("GET /notes/{id}", middleware.Logger(s.getAllNotesByIdHandler))
-
-	s.mux.HandleFunc("POST /notes", middleware.Logger(s.deleteNoteByIdHandler))
 }

@@ -60,7 +60,7 @@ func (s *Server) deleteNoteById(id int) error {
 	}
 	defer stmt.Close()
 
-	stmt.Exec(id)
+	_, _ = stmt.Exec(id)
 
 	return nil
 }
