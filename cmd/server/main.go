@@ -1,15 +1,16 @@
 package main
 
 import (
-	"context"
 	"log/slog"
-	"net/http"
-	"notey/pkg/note"
-	"notey/pkg/sql"
+	"net"
+	"notey/internal/note"
+	"notey/internal/sql"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -17,20 +18,21 @@ func main() {
 	db := sql.InitDB()
 	defer db.Close()
 
-	mux := http.NewServeMux()
+	grpcSrv := grpc.NewServer()
 
-	note := note.Server{}
-	note.Setup(db, mux)
+	// don't actually need to access it once it's init
+	_ = note.NewNoteServer(db, grpcSrv)
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
+	s, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		slog.Error("failed to start server", slog.Any("err", err))
+		os.Exit(1)
 	}
 
 	go func() {
-		slog.Info("Server started", slog.String("addr", server.Addr))
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			slog.Error("server failed to start %v", err)
+		slog.Info("Server started", slog.String("addr", ":8080"))
+		if err := grpcSrv.Serve(s); err != nil {
+			slog.Error("server failed to start", slog.Any("err", err))
 			os.Exit(1)
 		}
 	}()
@@ -40,13 +42,18 @@ func main() {
 	sig := <-exit
 	slog.Info("shutdown initiated", slog.String("signal", sig.String()))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	stopped := make(chan struct{})
+	go func() {
+		grpcSrv.GracefulStop()
+		close(stopped)
+	}()
 
-	if err := server.Shutdown(ctx); err != nil {
-		slog.Error("server forced to shutdown", slog.Any("err", err))
-		os.Exit(1)
+	select {
+	case <-stopped:
+		slog.Info("server has shutdown gracefully")
+	case <-time.After(5 * time.Second):
+		slog.Warn("shutdown timedout, forcing shutdown NOW")
+		grpcSrv.Stop()
 	}
 
-	slog.Info("server has shutdown")
 }
