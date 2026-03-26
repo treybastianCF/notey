@@ -6,6 +6,7 @@ import (
 	"fmt"
 	pb "notey/pkg/gen/note/v1"
 	"os"
+	"text/tabwriter"
 	"time"
 
 	"google.golang.org/grpc"
@@ -18,6 +19,19 @@ type Client struct {
 func NewClient(conn grpc.ClientConnInterface) *Client {
 	return &Client{
 		noteClient: pb.NewNoteServiceClient(conn),
+	}
+}
+
+func printNote(note *pb.Note) {
+	fmt.Printf("\033[1m%s\033[0m\n", note.Title)
+	fmt.Printf("\033[3m%s\033[0m\n", note.CreatedAt.AsTime().Format("2006-01-02 15:04:05"))
+	fmt.Printf("%s\n", note.Content)
+}
+func printListTable(notes []*pb.NoteAbbr) {
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	fmt.Fprintf(w, "\033[1mID\tTitle\tCreated At\033[0m\n")
+	for _, v := range notes {
+		fmt.Fprintf(w, "%d\t%s\t%s\n", v.Id, v.Title, v.CreatedAt.AsTime().Format("2006-01-02 15:04:05"))
 	}
 }
 
@@ -45,16 +59,14 @@ func (c *Client) Run() {
 			fmt.Printf("failed to retireve notes, %v\n", err)
 			os.Exit(1)
 		}
-		for _, note := range res.Notes {
-			fmt.Print(note.String())
-		}
+		printListTable(res.Notes)
 	} else if *get > -1 {
 		res, err := c.noteClient.GetNote(ctx, &pb.GetNoteRequest{Id: int32(*get)})
 		if err != nil {
 			fmt.Println("note not found")
 			os.Exit(1)
 		}
-		fmt.Println(res.Note.String())
+		printNote(res.Note)
 	} else if *del > -1 {
 		_, err := c.noteClient.DeleteNote(ctx, &pb.DeleteNoteRequest{Id: int32(*del)})
 		if err != nil {
@@ -74,6 +86,6 @@ func (c *Client) Run() {
 			os.Exit(1)
 		}
 		fmt.Println("Created note!")
-		fmt.Println(res.Note.String())
+		printNote(res.Note)
 	}
 }

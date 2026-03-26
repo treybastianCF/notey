@@ -1,5 +1,11 @@
 .PHONY: gen clean clean-db clean-build setup migrate new-note-migration
 
+build:
+	go build -o ./out/client ./cmd/client/main.go	
+	@echo "client built ./out/client"
+	go build -o ./out/server ./cmd/server/main.go
+	@echo "server built ./out/server"
+
 gen:
 	@echo "codegen"
 	buf generate proto
