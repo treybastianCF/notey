@@ -3,8 +3,10 @@ package note
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"notey/internal/note/db"
 	pb "notey/pkg/gen/note/v1"
+	"sync"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -15,11 +17,15 @@ import (
 type NoteServer struct {
 	pb.UnimplementedNoteServiceServer
 	queries *db.Queries
+
+	mu          sync.RWMutex
+	subscribers map[chan *pb.WatchNotesResponse]struct{}
 }
 
 func NewNoteServer(sql *sql.DB, grpc *grpc.Server) *NoteServer {
 	s := &NoteServer{
-		queries: db.New(sql),
+		queries:     db.New(sql),
+		subscribers: make(map[chan *pb.WatchNotesResponse]struct{}),
 	}
 
 	pb.RegisterNoteServiceServer(grpc, s)
@@ -68,6 +74,16 @@ func (s *NoteServer) CreateNote(ctx context.Context, req *pb.CreateNoteRequest) 
 	if err != nil {
 		return nil, status.Error(codes.Internal, "database error")
 	}
+	noteAbbr := &pb.NoteAbbr{Id: int32(note.ID), Title: note.Title, CreatedAt: timestamppb.New(note.Createdat.Time)}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for ch := range s.subscribers {
+		select {
+		case ch <- &pb.WatchNotesResponse{Note: noteAbbr}:
+		default:
+			slog.Warn("buffer full droping message")
+		}
+	}
 
 	return &pb.CreateNoteResponse{Note: noteToProto(&note)}, nil
 }
@@ -91,4 +107,32 @@ func (s *NoteServer) GetNotes(ctx context.Context, _ *pb.GetNotesRequest) (*pb.G
 	}
 
 	return &pb.GetNotesResponse{Notes: res}, nil
+}
+
+func (s *NoteServer) WatchNotes(_ *pb.WatchNotesRequest, stream pb.NoteService_WatchNotesServer) error {
+	ch := make(chan *pb.WatchNotesResponse, 10)
+	s.mu.Lock()
+	s.subscribers[ch] = struct{}{}
+	s.mu.Unlock()
+
+	// unregister when disconnect
+	defer func() {
+		s.mu.Lock()
+		delete(s.subscribers, ch)
+		s.mu.Unlock()
+		close(ch)
+	}()
+
+	for {
+		select {
+		case note := <-ch:
+			if err := stream.Send(note); err != nil {
+				return err
+			}
+
+		case <-stream.Context().Done():
+			return stream.Context().Err()
+		}
+	}
+
 }

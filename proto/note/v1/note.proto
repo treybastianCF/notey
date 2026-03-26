@@ -11,6 +11,7 @@ service NoteService {
   rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
   rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse);
   rpc GetNotes(GetNotesRequest) returns (GetNotesResponse);
+  rpc WatchNotes(WatchNotesRequest) returns (stream WatchNotesResponse);
 }
 
 message Note {
@@ -24,6 +25,11 @@ message NoteAbbr {
   int32 id = 1;
   string title = 2;
   google.protobuf.Timestamp created_at = 3;
+}
+
+message WatchNotesRequest {}
+message WatchNotesResponse {
+  NoteAbbr note = 1;
 }
 
 message GetNotesRequest {}
