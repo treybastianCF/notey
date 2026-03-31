@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"net"
+	"notey/internal/interceptor"
 	"notey/internal/note"
 	"notey/internal/sql"
 	"os"
@@ -18,7 +19,9 @@ func main() {
 	db := sql.InitDB()
 	defer db.Close()
 
-	grpcSrv := grpc.NewServer()
+	grpcSrv := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.RequestLogger),
+		grpc.StreamInterceptor(interceptor.StreamLogger))
 
 	// don't actually need to access it once it's init
 	_ = note.NewNoteServer(db, grpcSrv)

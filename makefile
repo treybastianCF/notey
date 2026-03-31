@@ -1,4 +1,4 @@
-.PHONY: gen clean clean-db clean-build setup migrate new-note-migration
+.PHONY: gen clean clean-db clean-build setup migrate new-note-migration check
 
 build:
 	go build -o ./out/client ./cmd/client/main.go	
@@ -39,3 +39,11 @@ new-note-migration:
 	@echo "creating new migration"
 	goose --dir "internal/note/db/migrations/" create $(NAME) sql
 
+
+check:
+	go mod tidy
+	go mod verify
+	gofmt -s -l . | wc -l
+	go vet ./...
+	gosec --exclude-generated ./...
+	govulncheck ./...

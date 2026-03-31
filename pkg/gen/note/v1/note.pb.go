@@ -7,13 +7,12 @@
 package notev1
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -25,7 +24,7 @@ const (
 
 type Note struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -63,7 +62,7 @@ func (*Note) Descriptor() ([]byte, []int) {
 	return file_note_v1_note_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Note) GetId() int32 {
+func (x *Note) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
@@ -93,7 +92,7 @@ func (x *Note) GetCreatedAt() *timestamppb.Timestamp {
 
 type NoteAbbr struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -130,7 +129,7 @@ func (*NoteAbbr) Descriptor() ([]byte, []int) {
 	return file_note_v1_note_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *NoteAbbr) GetId() int32 {
+func (x *NoteAbbr) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
@@ -313,7 +312,7 @@ func (x *GetNotesResponse) GetNotes() []*NoteAbbr {
 
 type GetNoteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -348,7 +347,7 @@ func (*GetNoteRequest) Descriptor() ([]byte, []int) {
 	return file_note_v1_note_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *GetNoteRequest) GetId() int32 {
+func (x *GetNoteRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
@@ -497,7 +496,7 @@ func (x *CreateNoteResponse) GetNote() *Note {
 
 type DeleteNoteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -532,7 +531,7 @@ func (*DeleteNoteRequest) Descriptor() ([]byte, []int) {
 	return file_note_v1_note_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *DeleteNoteRequest) GetId() int32 {
+func (x *DeleteNoteRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
@@ -581,13 +580,13 @@ const file_note_v1_note_proto_rawDesc = "" +
 	"\n" +
 	"\x12note/v1/note.proto\x12\anote.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x81\x01\n" +
 	"\x04Note\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\tR\acontent\x129\n" +
 	"\n" +
 	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"k\n" +
 	"\bNoteAbbr\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x129\n" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x13\n" +
@@ -598,7 +597,7 @@ const file_note_v1_note_proto_rawDesc = "" +
 	"\x10GetNotesResponse\x12'\n" +
 	"\x05notes\x18\x01 \x03(\v2\x11.note.v1.NoteAbbrR\x05notes\" \n" +
 	"\x0eGetNoteRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\"4\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"4\n" +
 	"\x0fGetNoteResponse\x12!\n" +
 	"\x04note\x18\x01 \x01(\v2\r.note.v1.NoteR\x04note\"C\n" +
 	"\x11CreateNoteRequest\x12\x14\n" +
@@ -607,7 +606,7 @@ const file_note_v1_note_proto_rawDesc = "" +
 	"\x12CreateNoteResponse\x12!\n" +
 	"\x04note\x18\x01 \x01(\v2\r.note.v1.NoteR\x04note\"#\n" +
 	"\x11DeleteNoteRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x05R\x02id\"\x14\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"\x14\n" +
 	"\x12DeleteNoteResponse2\xe3\x02\n" +
 	"\vNoteService\x12<\n" +
 	"\aGetNote\x12\x17.note.v1.GetNoteRequest\x1a\x18.note.v1.GetNoteResponse\x12E\n" +

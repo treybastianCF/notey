@@ -8,7 +8,6 @@ import (
 	"log"
 	pb "notey/pkg/gen/note/v1"
 	"os"
-	"text/tabwriter"
 
 	"google.golang.org/grpc"
 )
@@ -28,14 +27,15 @@ func printNote(note *pb.Note) {
 	fmt.Printf("\033[3m%s\033[0m\n", note.CreatedAt.AsTime().Format("2006-01-02 15:04:05"))
 	fmt.Printf("%s\n", note.Content)
 }
-func printTableItem(w io.Writer, n *pb.NoteAbbr) {
-	fmt.Fprintf(w, "%d\t%s\t%s\n", n.Id, n.Title, n.CreatedAt.AsTime().Format("2006-01-02 15:04:05"))
+
+func printTableItem(note *pb.NoteAbbr) {
+	fmt.Printf("%6d\t%-60s\t%s\n", note.Id, note.Title, note.CreatedAt.AsTime().Format("2006-01-02 15:04:05"))
 }
 
-func printListTable(w io.Writer, notes []*pb.NoteAbbr) {
-	fmt.Fprintf(w, "\033[1mID\tTitle\tCreated At\033[0m\n")
+func printListTable(notes []*pb.NoteAbbr) {
+	fmt.Printf("\033[1m%6s\t%-60s\tCreated At\033[0m\n", "Id", "Title")
 	for _, v := range notes {
-		printTableItem(w, v)
+		printTableItem(v)
 	}
 }
 
@@ -49,7 +49,6 @@ func (c *Client) Run() {
 	create := flag.Bool("new", false, "create a new note")
 	title := flag.String("title", "", "title of your note (used with --new)")
 	content := flag.String("content", "", "content of your note (used with --new)")
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 	flag.Parse()
 
 	if flag.NFlag() > 1 && !*create {
@@ -64,16 +63,16 @@ func (c *Client) Run() {
 			fmt.Printf("failed to retireve notes, %v\n", err)
 			os.Exit(1)
 		}
-		printListTable(w, res.Notes)
-		w.Flush()
+		printListTable(res.Notes)
+
 	} else if *watch {
 		res, err := c.noteClient.GetNotes(ctx, &pb.GetNotesRequest{})
 		if err != nil {
 			fmt.Printf("failed to retireve notes, %v\n", err)
 			os.Exit(1)
 		}
-		printListTable(w, res.Notes)
-		w.Flush()
+		printListTable(res.Notes)
+
 		stream, err := c.noteClient.WatchNotes(ctx, &pb.WatchNotesRequest{})
 		if err != nil {
 			log.Fatalf("failed to open stream watch stream %v", err)
@@ -87,19 +86,17 @@ func (c *Client) Run() {
 			if err != nil {
 				log.Fatalf("stream error %v", err)
 			}
-			printTableItem(w, res.Note)
-			w.Flush()
-
+			printTableItem(res.Note)
 		}
 	} else if *get > -1 {
-		res, err := c.noteClient.GetNote(ctx, &pb.GetNoteRequest{Id: int32(*get)})
+		res, err := c.noteClient.GetNote(ctx, &pb.GetNoteRequest{Id: int64(*get)})
 		if err != nil {
 			fmt.Println("note not found")
 			os.Exit(1)
 		}
 		printNote(res.Note)
 	} else if *del > -1 {
-		_, err := c.noteClient.DeleteNote(ctx, &pb.DeleteNoteRequest{Id: int32(*del)})
+		_, err := c.noteClient.DeleteNote(ctx, &pb.DeleteNoteRequest{Id: int64(*del)})
 		if err != nil {
 			fmt.Printf("failed to delete note %v\n", err)
 			os.Exit(1)

@@ -15,14 +15,14 @@ service NoteService {
 }
 
 message Note {
-  int32 id = 1;
+  int64 id = 1;
   string title = 2;
   string content = 3;
   google.protobuf.Timestamp created_at = 4;
 }
 
 message NoteAbbr {
-  int32 id = 1;
+  int64 id = 1;
   string title = 2;
   google.protobuf.Timestamp created_at = 3;
 }
@@ -38,7 +38,7 @@ message GetNotesResponse {
 }
 
 message GetNoteRequest {
-  int32 id = 1;
+  int64 id = 1;
 }
 
 message GetNoteResponse {
@@ -55,7 +55,7 @@ message CreateNoteResponse {
 }
 
 message DeleteNoteRequest {
-  int32 id = 1;
+  int64 id = 1;
 }
 
 message DeleteNoteResponse {}

@@ -34,7 +34,7 @@ func NewNoteServer(sql *sql.DB, grpc *grpc.Server) *NoteServer {
 
 func noteToProto(n *db.Note) *pb.Note {
 	return &pb.Note{
-		Id:        int32(n.ID),
+		Id:        n.ID,
 		Title:     n.Title,
 		Content:   n.Content,
 		CreatedAt: timestamppb.New(n.Createdat.Time),
@@ -43,7 +43,7 @@ func noteToProto(n *db.Note) *pb.Note {
 
 func noteAbbrToProto(n *db.GetNotesAbbrRow) *pb.NoteAbbr {
 	return &pb.NoteAbbr{
-		Id:        int32(n.ID),
+		Id:        n.ID,
 		Title:     n.Title,
 		CreatedAt: timestamppb.New(n.Createdat.Time),
 	}
@@ -74,7 +74,7 @@ func (s *NoteServer) CreateNote(ctx context.Context, req *pb.CreateNoteRequest) 
 	if err != nil {
 		return nil, status.Error(codes.Internal, "database error")
 	}
-	noteAbbr := &pb.NoteAbbr{Id: int32(note.ID), Title: note.Title, CreatedAt: timestamppb.New(note.Createdat.Time)}
+	noteAbbr := &pb.NoteAbbr{Id: note.ID, Title: note.Title, CreatedAt: timestamppb.New(note.Createdat.Time)}
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	for ch := range s.subscribers {
