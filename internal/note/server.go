@@ -16,7 +16,7 @@ import (
 
 type NoteServer struct {
 	pb.UnimplementedNoteServiceServer
-	queries *db.Queries
+	queries db.Querier
 
 	mu          sync.RWMutex
 	subscribers map[chan *pb.WatchNotesResponse]struct{}
